@@ -45,12 +45,19 @@ Array和ArrayBuilder之间的关系是通过它们的相关类型和它们所服
 ### 如何使用 ArrayBuilder?
 
 ArrayBuilder用于创建和构建表示数据存储中列的数组。以下是一些值得注意的用法：
-1. DataChunkBuilder：它利用ArrayBuilder实现来构建DataChunks，这是数据块的表示形式。 DataChunkBuilder持有一个ArrayBuilderImpl向量，并使用push_row或push_str_row方法添加行。当块达到其容量时，take()方法通过调用各个数组生成器上的take()方法来创建DataChunk。
+1. DataChunkBuilder：它利用ArrayBuilder实现来构建DataChunks，这是数据块的表示形式。 DataChunkBuilder持有一个ArrayBuilderImpl向量，并使用push_row或push_str_row方法添加行。当块达到其容量时，take()方法通过调用各个数组生成器上的take()方法来创建DataChunk
 
-2. CSV Reader：在读取CSV文件时，使用ArrayBuilder实现将解析后的数据转换并存储到适当的数组中。随着从CSV读取行，数据被推入相应的数组生成器中。
+2. CSV Reader：在读取CSV文件时，使用ArrayBuilder实现将解析后的数据转换并存储到适当的数组中。随着从CSV读取行，数据被推入相应的数组生成器中
 
 3. MemTable：在MemTable特征的BTreeMapMemTable实现中，在刷新数据以从内部B树映射保留行创建DataChunk时使用了ArrayBuilder。使用列类型信息创建数组生成器，然后将数据从行推入数组生成器以创建最终的DataChunk
 
-4. Convert Functions：在某些情况下，需要将数据从一种类型转换为另一种类型。 ArrayBuilder实现用于创建目标数组以进行数据类型转换。
+4. Convert Functions：在某些情况下，需要将数据从一种类型转换为另一种类型。 ArrayBuilder实现用于创建目标数组以进行数据类型转换
 
 在这些上下文中使用ArrayBuilder有助于简化在RisingLight项目中创建、存储和操作列式数据过程，并提供一致接口并启用特定数据类型和用例优化。
+
+### 实现 ArrayBuilder 的结构
+
+设计ArrayBuilderImpl的目的是提供一个统一类型，可以容纳ArrayBuilder trait的各种具体实现。这样就可以在同一数据结构或函数中轻松地操作、存储和使用不同的数组构建器，而无需诸如trait对象之类的动态分派。
+
+ArrayBuilderImpl是一个枚举，它包含了不同的ArrayBuilder具体实现，例如PrimitiveArrayBuilder<T>，其中T可以是bool、i32等。
+通过使用ArrayBuilderImpl，在保持代码清晰高效的同时可以处理各种数组构建器。例如，在DataChunkBuilder中，使用Vec<ArrayBuilderImpl>来存储多个数组构建器，每个数组构建器处理数据块中不同列。这种设计选择使得以一致和类型安全方式轻松地处理和存储不同类型的数组和构建器成为可能。
