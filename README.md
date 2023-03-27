@@ -2,5 +2,5 @@
 
 Ordinary study notes are organized into typst and made public.
 
-- [opandal](./opendal)
+- [opendal](./opendal)
 - [risinglight](./risinglight)
